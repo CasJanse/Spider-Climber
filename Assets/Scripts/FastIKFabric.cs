@@ -153,11 +153,11 @@ public class FastIKFabric : MonoBehaviour
         {
             if (i == positions.Length - 1)
             {
-                bones[i].rotation = target.transform.rotation * Quaternion.Inverse(startRotationTarget) * startRotationBone[i];
+                //bones[i].rotation = target.transform.rotation * Quaternion.Inverse(startRotationTarget) * startRotationBone[i];
             }
             else 
             {
-                bones[i].rotation = Quaternion.FromToRotation(startDirectionSucc[i], positions[i + 1] - positions[i]) * startRotationBone[i];
+                //bones[i].rotation = Quaternion.FromToRotation(startDirectionSucc[i], positions[i + 1] - positions[i]) * startRotationBone[i];
             }
             bones[i].position = positions[i];
         }
