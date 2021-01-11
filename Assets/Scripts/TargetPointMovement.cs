@@ -13,8 +13,11 @@ public class TargetPointMovement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        int layerMask = 1 << 6;
+        layerMask = ~layerMask;
+
         RaycastHit hit;
-        if (Physics.Raycast(transform.position + Vector3.up * 2f, Vector3.down, out hit, Mathf.Infinity))
+        if (Physics.Raycast(transform.position + Vector3.up * 30f, Vector3.down, out hit, Mathf.Infinity, layerMask))
         {
             transform.position = hit.point;
         }
