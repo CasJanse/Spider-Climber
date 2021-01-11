@@ -6,7 +6,8 @@ using UnityEngine;
 public class FastIKFabric : MonoBehaviour
 {
     [SerializeField] private int chainLength = 2;
-    [SerializeField] private GameObject target;
+    [SerializeField] private GameObject endPoint;
+    [SerializeField] private GameObject targetPoint;
     [SerializeField] private GameObject pole;
     
     [Header("Solver Parameters")]
@@ -15,14 +16,20 @@ public class FastIKFabric : MonoBehaviour
     [Range(0, 1)]
     [SerializeField] private float snapBackStrength = 1f;
 
+    [Header("Target Movement")]
+    [SerializeField] private float maxDistanceFromTarget;
+    [SerializeField] private float distanceToTarget;
+
     protected float[] bonesLength;
     protected float completeLength;
     protected Transform[] bones;
     protected Vector3[] positions;
     protected Vector3[] startDirectionSucc;
     protected Quaternion[] startRotationBone;
-    protected Quaternion startRotationTarget;
+    protected Quaternion startRotationEndpoint;
     protected Quaternion startRotationRoot;
+
+    
 
     // Start is called before the first frame update
     void Awake()
@@ -38,7 +45,7 @@ public class FastIKFabric : MonoBehaviour
         startDirectionSucc = new Vector3[chainLength + 1];
         startRotationBone = new Quaternion[chainLength + 1];
 
-        startRotationTarget = target.transform.rotation;
+        startRotationEndpoint = endPoint.transform.rotation;
         completeLength = 0;
 
         Transform current = transform;
@@ -49,7 +56,7 @@ public class FastIKFabric : MonoBehaviour
 
             if (i == bones.Length - 1)
             {
-                startDirectionSucc[i] = target.transform.position - current.position;
+                startDirectionSucc[i] = endPoint.transform.position - current.position;
             }
             else 
             {
@@ -64,12 +71,22 @@ public class FastIKFabric : MonoBehaviour
 
     private void LateUpdate()
     {
+        distanceToTarget = Vector3.Distance(endPoint.transform.position, targetPoint.transform.position);
+        if (distanceToTarget > maxDistanceFromTarget)
+        {
+            MoveEndPointPoint();
+        }
         ResolveIK();
+    }
+
+    private void MoveEndPointPoint() 
+    {
+        endPoint.transform.position = targetPoint.transform.position;
     }
 
     private void ResolveIK() 
     {
-        if (target == null)
+        if (endPoint == null)
             return;
 
         if (bonesLength.Length != chainLength)
@@ -86,10 +103,10 @@ public class FastIKFabric : MonoBehaviour
 
         // Calculations
         // Further away than max length
-        if ((target.transform.position - bones[0].position).sqrMagnitude >= completeLength * completeLength)
+        if ((endPoint.transform.position - bones[0].position).sqrMagnitude >= completeLength * completeLength)
         {
             // Stretch it
-            Vector3 direction = (target.transform.position - positions[0]).normalized;
+            Vector3 direction = (endPoint.transform.position - positions[0]).normalized;
 
             // Set everything after root
             for (int i = 1; i < positions.Length; i++)
@@ -112,8 +129,8 @@ public class FastIKFabric : MonoBehaviour
                 {
                     if (i == positions.Length - 1)
                     {
-                        // Set leaf bone to target position
-                        positions[i] = target.transform.position;
+                        // Set leaf bone to endpoint position
+                        positions[i] = endPoint.transform.position;
                     }
                     else 
                     {
@@ -127,8 +144,8 @@ public class FastIKFabric : MonoBehaviour
                     positions[i] = positions[i - 1] + (positions[i] - positions[i - 1]).normalized * bonesLength[i - 1];
                 }
 
-                // Stop calculations if leaf bone is close enough to target
-                if ((positions[positions.Length - 1] - target.transform.position).sqrMagnitude < delta * delta)
+                // Stop calculations if leaf bone is close enough to endpoint
+                if ((positions[positions.Length - 1] - endPoint.transform.position).sqrMagnitude < delta * delta)
                 {
                     break;
                 }
