@@ -19,6 +19,7 @@ public class FastIKFabric : MonoBehaviour
     [Header("Target Movement")]
     [SerializeField] private float maxDistanceFromTarget;
     [SerializeField] private float distanceToTarget;
+    [SerializeField] private float targetMovementSpeed = 1f;
 
     protected float[] bonesLength;
     protected float completeLength;
@@ -28,6 +29,11 @@ public class FastIKFabric : MonoBehaviour
     protected Quaternion[] startRotationBone;
     protected Quaternion startRotationEndpoint;
     protected Quaternion startRotationRoot;
+    protected bool movingEndpoint;
+    protected bool endReached;
+    protected Vector3 endPointStartPosition;
+    protected Vector3 endPointNewPosition;
+    protected float movementCounter;
 
     
 
@@ -72,16 +78,33 @@ public class FastIKFabric : MonoBehaviour
     private void LateUpdate()
     {
         distanceToTarget = Vector3.Distance(endPoint.transform.position, targetPoint.transform.position);
-        if (distanceToTarget > maxDistanceFromTarget)
+        if (distanceToTarget > maxDistanceFromTarget && !movingEndpoint)
         {
-            MoveEndPointPoint();
+            movingEndpoint = true;
+            movementCounter = 0;
+            endPointStartPosition = endPoint.transform.position;
+            endPointNewPosition = targetPoint.transform.position;
         }
+        if (movingEndpoint)
+        {
+            MoveEndPoint();
+        }
+
         ResolveIK();
     }
 
-    private void MoveEndPointPoint() 
+    private void MoveEndPoint() 
     {
-        endPoint.transform.position = targetPoint.transform.position;
+        if (movementCounter > 100)
+        {
+            movingEndpoint = false;
+            return;
+        }
+
+        float fraction = (1f / 100f) * movementCounter;
+        endPoint.transform.position = Vector3.Lerp(endPointStartPosition, endPointNewPosition, fraction);
+
+        movementCounter += targetMovementSpeed;
     }
 
     private void ResolveIK() 
