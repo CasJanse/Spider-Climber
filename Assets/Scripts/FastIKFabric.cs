@@ -35,12 +35,13 @@ public class FastIKFabric : MonoBehaviour
     protected Vector3 endPointNewPosition;
     protected float movementCounter;
 
-    
+    protected MovementController movementController;
 
     // Start is called before the first frame update
     void Awake()
     {
         Init();
+        movementController = GetComponentInParent<MovementController>();
     }
 
     private void Init() 
@@ -101,7 +102,7 @@ public class FastIKFabric : MonoBehaviour
             return;
         }
 
-        float fraction = (1f / 100f) * movementCounter;
+        float fraction = (((1f / 100f) * movementCounter) / 3) * movementController.MovementSpeed;
         endPoint.transform.position = Vector3.Lerp(endPointStartPosition, endPointNewPosition, fraction);
 
         movementCounter += targetMovementSpeed;
